@@ -47,6 +47,7 @@
             background: #f0f0f5;
             border-radius: 12px;
             padding: 4px;
+            flex-wrap: wrap;
         }
         .tab-btn {
             flex: 1;
@@ -54,11 +55,12 @@
             border: none;
             background: transparent;
             border-radius: 10px;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 600;
             color: #666;
             cursor: pointer;
             transition: all 0.3s;
+            min-width: 50px;
         }
         .tab-btn.active {
             background: white;
@@ -169,6 +171,23 @@
             margin-top: 8px;
             border: 2px solid #eee;
         }
+        .doc-info {
+            background: #f8f8fc;
+            padding: 12px 16px;
+            border-radius: 12px;
+            margin-top: 8px;
+            text-align: left;
+        }
+        .doc-info .doc-name {
+            font-weight: 600;
+            color: #302b63;
+            word-break: break-all;
+        }
+        .doc-info .doc-size {
+            color: #888;
+            font-size: 13px;
+            margin-top: 2px;
+        }
 
         #qrcode {
             margin: 20px auto 10px;
@@ -237,7 +256,6 @@
             color: #e74c3c;
         }
 
-        /* ===== 打赏按钮样式 ===== */
         .donate-wrapper {
             text-align: center;
             margin-top: 10px;
@@ -270,14 +288,13 @@
             padding-top: 16px;
         }
 
-        /* 响应式 */
         @media (max-width: 500px) {
             .container { padding: 20px 16px; }
             .input-group { flex-wrap: wrap; }
             .input-group input { width: 100%; }
             .input-group button { width: 100%; }
             .tab-bar { flex-wrap: wrap; }
-            .tab-btn { font-size: 12px; padding: 8px 0; }
+            .tab-btn { font-size: 11px; padding: 8px 4px; }
             .link-area { flex-wrap: wrap; }
             .link-area input { width: 100%; }
         }
@@ -287,7 +304,7 @@
 
 <div class="container">
     <h1>📱 全能二维码</h1>
-    <p class="subtitle">文本 · 图片 · 音频 · 视频 → 一键生成二维码</p>
+    <p class="subtitle">文本 · 图片 · 音频 · 视频 · 文档 → 一键生成二维码</p>
 
     <!-- Tab 切换栏 -->
     <div class="tab-bar">
@@ -295,6 +312,7 @@
         <button class="tab-btn" data-tab="tab-image">🖼️ 图片</button>
         <button class="tab-btn" data-tab="tab-audio">🎵 音频</button>
         <button class="tab-btn" data-tab="tab-video">🎬 视频</button>
+        <button class="tab-btn" data-tab="tab-doc">📄 文档</button>
     </div>
 
     <!-- ======== Tab: 文本 ======== -->
@@ -361,7 +379,25 @@
         <div id="statusVideo" class="status-msg"></div>
     </div>
 
-    <!-- ===== 打赏按钮（放在这里） ===== -->
+    <!-- ======== Tab: 文档 (新增) ======== -->
+    <div id="tab-doc" class="tab-content">
+        <div class="upload-area" id="docUploadArea">
+            <span class="icon">📄</span>
+            <span class="hint">点击上传 <strong>文档</strong>（PDF / Word / Excel / PPT / TXT）</span>
+            <div class="file-name" id="docFileName"></div>
+            <input type="file" id="docFileInput" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt" />
+        </div>
+        <div class="preview-area" id="docPreview"></div>
+        <div class="link-area">
+            <input type="text" id="docLinkInput" placeholder="上传后自动生成链接..." readonly />
+            <button class="btn-copy" onclick="copyLink('docLinkInput')">复制</button>
+        </div>
+        <button class="btn-primary" style="width:100%;margin-top:6px;" onclick="generateFromFile('doc')">📱 生成二维码</button>
+        <div id="qrcodeDoc" class="qr-container"></div>
+        <div id="statusDoc" class="status-msg"></div>
+    </div>
+
+    <!-- ===== 打赏按钮 ===== -->
     <div class="donate-wrapper">
         <a href="/donate.html" class="btn-donate">☕ 请我喝一杯咖啡</a>
     </div>
@@ -371,7 +407,7 @@
 
 <script>
     // ============================================================
-    // 你的 ImgBB API Key（已填入）
+    // 你的 ImgBB API Key
     // ============================================================
     const IMGBB_API_KEY = 'd83455935a3ed74e80990495a0415e34';
 
@@ -384,7 +420,6 @@
             this.classList.add('active');
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
             document.getElementById(this.dataset.tab).classList.add('active');
-            // 清空状态
             document.querySelectorAll('.status-msg').forEach(el => el.textContent = '');
         });
     });
@@ -429,6 +464,7 @@
         setupUpload('image');
         setupUpload('audio');
         setupUpload('video');
+        setupUpload('doc');  // 新增文档上传
     };
 
     // ============================================================
@@ -450,12 +486,22 @@
             // 显示预览
             const preview = document.getElementById(type + 'Preview');
             const url = URL.createObjectURL(file);
+
             if (type === 'image') {
                 preview.innerHTML = `<img src="${url}" alt="预览" />`;
             } else if (type === 'audio') {
                 preview.innerHTML = `<audio controls src="${url}"></audio>`;
             } else if (type === 'video') {
                 preview.innerHTML = `<video controls src="${url}" style="max-height:200px;"></video>`;
+            } else if (type === 'doc') {
+                // 文档显示文件信息
+                const size = (file.size / 1024).toFixed(2);
+                preview.innerHTML = `
+                    <div class="doc-info">
+                        <div class="doc-name">📄 ${file.name}</div>
+                        <div class="doc-size">文件大小：${size} KB</div>
+                    </div>
+                `;
             }
 
             // 自动上传
