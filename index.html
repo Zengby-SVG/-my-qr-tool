@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>全能二维码生成器</title>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            padding: 35px 30px;
+            border-radius: 24px;
+            box-shadow: 0 30px 80px rgba(0,0,0,0.5);
+            max-width: 560px;
+            width: 100%;
+        }
+        h1 {
+            text-align: center;
+            font-size: 26px;
+            color: #1a1a2e;
+            margin-bottom: 6px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 25px;
+        }
+        .tab-bar {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 20px;
+            background: #f0f0f5;
+            border-radius: 12px;
+            padding: 4px;
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 10px 0;
+            border: none;
+            background: transparent;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .tab-btn.active {
+            background: white;
+            color: #302b63;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+        .tab-btn:hover:not(.active) {
+            color: #302b63;
+        }
+
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        .input-group input {
+            flex: 1;
+            padding: 12px 16px;
+            font-size: 15px;
+            border: 2px solid #e8e8ef;
+            border-radius: 12px;
+            outline: none;
+            transition: border 0.3s;
+        }
+        .input-group input:focus {
+            border-color: #302b63;
+        }
+
+        .btn-primary {
+            padding: 12px 28px;
+            font-size: 15px;
+            background: #302b63;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.1s;
+            white-space: nowrap;
+            font-weight: 600;
+        }
+        .btn-primary:hover {
+            background: #4a3f8a;
+        }
+        .btn-primary:active {
+            transform: scale(0.95);
+        }
+
+        .upload-area {
+            border: 2px dashed #d0d0dd;
+            border-radius: 16px;
+            padding: 30px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.3s, background 0.3s;
+            margin-bottom: 12px;
+        }
+        .upload-area:hover {
+            border-color: #302b63;
+            background: #f8f7ff;
+        }
+        .upload-area .icon {
+            font-size: 40px;
+            display: block;
+            margin-bottom: 8px;
+        }
+        .upload-area .hint {
+            color: #888;
+            font-size: 14px;
+        }
+        .upload-area .hint strong {
+            color: #302b63;
+        }
+        .upload-area .file-name {
+            color: #302b63;
+            font-weight: 600;
+            font-size: 14px;
+            margin-top: 6px;
+            display: none;
+        }
+        .upload-area .file-name.show {
+            display: block;
+        }
+        .upload-area input[type="file"] {
+            display: none;
+        }
+
+        .preview-area {
+            margin-top: 12px;
+            text-align: center;
+        }
+        .preview-area audio,
+        .preview-area video {
+            max-width: 100%;
+            border-radius: 12px;
+            margin-top: 8px;
+        }
+        .preview-area img {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 12px;
+            margin-top: 8px;
+            border: 2px solid #eee;
+        }
+
+        #qrcode {
+            margin: 20px auto 10px;
+            display: flex;
+            justify-content: center;
+            min-height: 160px;
+            align-items: center;
+        }
+        #qrcode canvas,
+        #qrcode img {
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        .qr-container {
+            display: flex;
+            justify-content: center;
+            min-height: 120px;
+            margin-top: 12px;
+        }
+        .qr-container canvas,
+        .qr-container img {
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        .link-area {
+            display: flex;
+            gap: 10px;
+            margin: 12px 0 8px;
+        }
+        .link-area input {
+            flex: 1;
+            padding: 10px 14px;
+            font-size: 13px;
+            border: 2px solid #e8e8ef;
+            border-radius: 10px;
+            outline: none;
+            background: #f8f8fc;
+            color: #333;
+        }
+        .link-area .btn-copy {
+            padding: 10px 18px;
+            background: #e8e8ef;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #333;
+            transition: background 0.3s;
+        }
+        .link-area .btn-copy:hover {
+            background: #d0d0dd;
+        }
+
+        .status-msg {
+            font-size: 13px;
+            color: #666;
+            text-align: center;
+            margin-top: 4px;
+            min-height: 20px;
+        }
+        .status-msg.success {
+            color: #27ae60;
+        }
+        .status-msg.error {
+            color: #e74c3c;
+        }
+
+        .footer {
+            text-align: center;
+            font-size: 12px;
+            color: #ccc;
+            margin-top: 20px;
+            border-top: 1px solid #f0f0f5;
+            padding-top: 16px;
+        }
+
+        /* 响应式 */
+        @media (max-width: 500px) {
+            .container { padding: 20px 16px; }
+            .input-group { flex-wrap: wrap; }
+            .input-group input { width: 100%; }
+            .input-group button { width: 100%; }
+            .tab-bar { flex-wrap: wrap; }
+            .tab-btn { font-size: 12px; padding: 8px 0; }
+            .link-area { flex-wrap: wrap; }
+            .link-area input { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>📱 全能二维码</h1>
+    <p class="subtitle">文本 · 图片 · 音频 · 视频 → 一键生成二维码</p>
+
+    <!-- Tab 切换栏 -->
+    <div class="tab-bar">
+        <button class="tab-btn active" data-tab="tab-text">📝 文本</button>
+        <button class="tab-btn" data-tab="tab-image">🖼️ 图片</button>
+        <button class="tab-btn" data-tab="tab-audio">🎵 音频</button>
+        <button class="tab-btn" data-tab="tab-video">🎬 视频</button>
+    </div>
+
+    <!-- ======== Tab: 文本 ======== -->
+    <div id="tab-text" class="tab-content active">
+        <div class="input-group">
+            <input type="text" id="textInput" placeholder="输入文本或网址..." value="https://www.zby1314.cn" />
+            <button class="btn-primary" onclick="generateFromText()">生成</button>
+        </div>
+        <div id="qrcode"></div>
+        <div id="statusMsg" class="status-msg"></div>
+    </div>
+
+    <!-- ======== Tab: 图片 ======== -->
+    <div id="tab-image" class="tab-content">
+        <div class="upload-area" id="imageUploadArea">
+            <span class="icon">🖼️</span>
+            <span class="hint">点击上传 <strong>图片</strong>（JPG/PNG/GIF）</span>
+            <div class="file-name" id="imageFileName"></div>
+            <input type="file" id="imageFileInput" accept="image/*" />
+        </div>
+        <div class="preview-area" id="imagePreview"></div>
+        <div class="link-area">
+            <input type="text" id="imageLinkInput" placeholder="上传后自动生成链接..." readonly />
+            <button class="btn-copy" onclick="copyLink('imageLinkInput')">复制</button>
+        </div>
+        <button class="btn-primary" style="width:100%;margin-top:6px;" onclick="generateFromFile('image')">📱 生成二维码</button>
+        <div id="qrcodeImage" class="qr-container"></div>
+        <div id="statusImage" class="status-msg"></div>
+    </div>
+
+    <!-- ======== Tab: 音频 ======== -->
+    <div id="tab-audio" class="tab-content">
+        <div class="upload-area" id="audioUploadArea">
+            <span class="icon">🎵</span>
+            <span class="hint">点击上传 <strong>音频</strong>（MP3/WAV/M4A）</span>
+            <div class="file-name" id="audioFileName"></div>
+            <input type="file" id="audioFileInput" accept="audio/*" />
+        </div>
+        <div class="preview-area" id="audioPreview"></div>
+        <div class="link-area">
+            <input type="text" id="audioLinkInput" placeholder="上传后自动生成链接..." readonly />
+            <button class="btn-copy" onclick="copyLink('audioLinkInput')">复制</button>
+        </div>
+        <button class="btn-primary" style="width:100%;margin-top:6px;" onclick="generateFromFile('audio')">📱 生成二维码</button>
+        <div id="qrcodeAudio" class="qr-container"></div>
+        <div id="statusAudio" class="status-msg"></div>
+    </div>
+
+    <!-- ======== Tab: 视频 ======== -->
+    <div id="tab-video" class="tab-content">
+        <div class="upload-area" id="videoUploadArea">
+            <span class="icon">🎬</span>
+            <span class="hint">点击上传 <strong>视频</strong>（MP4/AVI/MOV）</span>
+            <div class="file-name" id="videoFileName"></div>
+            <input type="file" id="videoFileInput" accept="video/*" />
+        </div>
+        <div class="preview-area" id="videoPreview"></div>
+        <div class="link-area">
+            <input type="text" id="videoLinkInput" placeholder="上传后自动生成链接..." readonly />
+            <button class="btn-copy" onclick="copyLink('videoLinkInput')">复制</button>
+        </div>
+        <button class="btn-primary" style="width:100%;margin-top:6px;" onclick="generateFromFile('video')">📱 生成二维码</button>
+        <div id="qrcodeVideo" class="qr-container"></div>
+        <div id="statusVideo" class="status-msg"></div>
+    </div>
+
+    <div class="footer">⚡ 文件上传至免费图床 · 永久有效</div>
+</div>
+
+<script>
+    // ============================================================
+    // 你的 ImgBB API Key（已填入）
+    // ============================================================
+    const IMGBB_API_KEY = 'd83455935a3ed74e80990495a0415e34';
+
+    // ============================================================
+    // 1. Tab 切换
+    // ============================================================
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.getElementById(this.dataset.tab).classList.add('active');
+            // 清空状态
+            document.querySelectorAll('.status-msg').forEach(el => el.textContent = '');
+        });
+    });
+
+    // ============================================================
+    // 2. 文本生成二维码
+    // ============================================================
+    function generateQR(containerId, text, statusId) {
+        const container = document.getElementById(containerId);
+        const status = document.getElementById(statusId);
+        container.innerHTML = '';
+        if (!text || text.trim() === '') {
+            status.textContent = '⚠️ 请输入有效内容';
+            status.className = 'status-msg error';
+            return;
+        }
+        try {
+            new QRCode(container, {
+                text: text,
+                width: 200,
+                height: 200,
+                colorDark: '#1a1a2e',
+                colorLight: '#ffffff',
+                correctLevel: QRCode.CorrectLevel.H
+            });
+            status.textContent = '✅ 二维码生成成功！扫码即可访问';
+            status.className = 'status-msg success';
+        } catch (e) {
+            status.textContent = '⚠️ 生成失败，请检查内容';
+            status.className = 'status-msg error';
+        }
+    }
+
+    function generateFromText() {
+        const text = document.getElementById('textInput').value.trim();
+        generateQR('qrcode', text, 'statusMsg');
+    }
+
+    // 页面加载自动生成
+    window.onload = function() {
+        generateFromText();
+        setupUpload('image');
+        setupUpload('audio');
+        setupUpload('video');
+    };
+
+    // ============================================================
+    // 3. 文件上传 (使用免费图床 imgbb.com)
+    // ============================================================
+    function setupUpload(type) {
+        const fileInput = document.getElementById(type + 'FileInput');
+        const uploadArea = document.getElementById(type + 'UploadArea');
+        const fileName = document.getElementById(type + 'FileName');
+
+        uploadArea.addEventListener('click', () => fileInput.click());
+
+        fileInput.addEventListener('change', function(e) {
+            const file = this.files[0];
+            if (!file) return;
+            fileName.textContent = '📎 ' + file.name;
+            fileName.classList.add('show');
+
+            // 显示预览
+            const preview = document.getElementById(type + 'Preview');
+            const url = URL.createObjectURL(file);
+            if (type === 'image') {
+                preview.innerHTML = `<img src="${url}" alt="预览" />`;
+            } else if (type === 'audio') {
+                preview.innerHTML = `<audio controls src="${url}"></audio>`;
+            } else if (type === 'video') {
+                preview.innerHTML = `<video controls src="${url}" style="max-height:200px;"></video>`;
+            }
+
+            // 自动上传
+            uploadFile(type, file);
+        });
+    }
+
+    function uploadFile(type, file) {
+        const linkInput = document.getElementById(type + 'LinkInput');
+        const statusId = 'status' + type.charAt(0).toUpperCase() + type.slice(1);
+        const status = document.getElementById(statusId);
+        status.textContent = '⏳ 上传中...';
+        status.className = 'status-msg';
+
+        const formData = new FormData();
+        formData.append('image', file);
+
+        const apiUrl = `https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`;
+
+        fetch(apiUrl, {
+            method: 'POST',
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                const url = data.data.url;
+                linkInput.value = url;
+                status.textContent = '✅ 上传成功！二维码已自动生成';
+                status.className = 'status-msg success';
+                // 自动生成二维码
+                const qrContainer = document.getElementById('qrcode' + type.charAt(0).toUpperCase() + type.slice(1));
+                qrContainer.innerHTML = '';
+                new QRCode(qrContainer, {
+                    text: url,
+                    width: 200,
+                    height: 200,
+                    colorDark: '#1a1a2e',
+                    colorLight: '#ffffff',
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+            } else {
+                status.textContent = '⚠️ 上传失败: ' + (data.error?.message || '未知错误');
+                status.className = 'status-msg error';
+            }
+        })
+        .catch(err => {
+            status.textContent = '⚠️ 上传失败，请检查网络: ' + err.message;
+            status.className = 'status-msg error';
+        });
+    }
+
+    // 手动生成二维码
+    function generateFromFile(type) {
+        const linkInput = document.getElementById(type + 'LinkInput');
+        const url = linkInput.value.trim();
+        const statusId = 'status' + type.charAt(0).toUpperCase() + type.slice(1);
+        const status = document.getElementById(statusId);
+        const qrContainer = document.getElementById('qrcode' + type.charAt(0).toUpperCase() + type.slice(1));
+        if (!url) {
+            status.textContent = '⚠️ 请先上传文件';
+            status.className = 'status-msg error';
+            return;
+        }
+        qrContainer.innerHTML = '';
+        try {
+            new QRCode(qrContainer, {
+                text: url,
+                width: 200,
+                height: 200,
+                colorDark: '#1a1a2e',
+                colorLight: '#ffffff',
+                correctLevel: QRCode.CorrectLevel.H
+            });
+            status.textContent = '✅ 二维码生成成功！';
+            status.className = 'status-msg success';
+        } catch (e) {
+            status.textContent = '⚠️ 生成失败';
+            status.className = 'status-msg error';
+        }
+    }
+
+    // ============================================================
+    // 4. 复制链接
+    // ============================================================
+    function copyLink(inputId) {
+        const input = document.getElementById(inputId);
+        if (!input.value) {
+            alert('没有链接可复制');
+            return;
+        }
+        navigator.clipboard?.writeText(input.value).then(() => {
+            alert('✅ 已复制链接到剪贴板');
+        }).catch(() => {
+            input.select();
+            document.execCommand('copy');
+            alert('✅ 已复制链接到剪贴板');
+        });
+    }
+</script>
+
+</body>
+</html>
