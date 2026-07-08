@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>请我喝一杯咖啡 ☕</title>
+    <style>
+        /* ===== 全局重置 & 基础 ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            padding: 20px;
+        }
+
+        /* ===== 卡片容器 ===== */
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 40px 30px;
+            border-radius: 28px;
+            max-width: 420px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
+            transition: transform 0.3s ease;
+        }
+
+        .container:hover {
+            transform: translateY(-4px);
+        }
+
+        /* ===== 头像 ===== */
+        .avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 12px;
+            font-size: 40px;
+            color: white;
+            box-shadow: 0 8px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        /* ===== 标题 ===== */
+        .name {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1a1a2e;
+        }
+
+        .bio {
+            color: #888;
+            font-size: 14px;
+            margin-top: 4px;
+            margin-bottom: 20px;
+        }
+
+        .divider {
+            border: none;
+            height: 2px;
+            background: linear-gradient(to right, transparent, #e0e0e0, transparent);
+            margin: 16px 0 20px;
+        }
+
+        /* ===== 打赏文案 ===== */
+        .coffee-icon {
+            font-size: 48px;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .donate-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #1a1a2e;
+        }
+
+        .donate-sub {
+            color: #888;
+            font-size: 14px;
+            margin-top: 2px;
+            margin-bottom: 20px;
+        }
+
+        /* ===== 二维码网格 ===== */
+        .qr-grid {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .qr-item {
+            background: #f8f8fc;
+            padding: 16px 16px 12px;
+            border-radius: 16px;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            flex: 1;
+            min-width: 130px;
+            max-width: 170px;
+        }
+
+        .qr-item:hover {
+            border-color: #667eea;
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+        }
+
+        .qr-item .label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .qr-item .label .icon {
+            margin-right: 4px;
+        }
+
+        .qr-item img {
+            width: 100%;
+            max-width: 140px;
+            height: auto;
+            border-radius: 8px;
+            background: white;
+            padding: 4px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+            display: block;
+            margin: 0 auto;
+        }
+
+        .qr-item .hint {
+            font-size: 12px;
+            color: #aaa;
+            margin-top: 6px;
+        }
+
+        /* ===== 返回按钮 ===== */
+        .back-btn {
+            display: inline-block;
+            margin-top: 24px;
+            padding: 12px 32px;
+            background: #f0f0f5;
+            color: #555;
+            border-radius: 30px;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        /* ===== Footer ===== */
+        .footer {
+            margin-top: 20px;
+            font-size: 12px;
+            color: #ccc;
+        }
+
+        /* ===== 响应式 ===== */
+        @media (max-width: 480px) {
+            .container {
+                padding: 28px 18px;
+            }
+            .qr-grid {
+                gap: 12px;
+            }
+            .qr-item {
+                padding: 12px 12px 10px;
+                min-width: 110px;
+                max-width: 145px;
+            }
+            .qr-item img {
+                max-width: 110px;
+            }
+            .name {
+                font-size: 20px;
+            }
+            .donate-title {
+                font-size: 18px;
+            }
+            .avatar {
+                width: 64px;
+                height: 64px;
+                font-size: 32px;
+            }
+        }
+
+        @media (max-width: 360px) {
+            .qr-item {
+                min-width: 100%;
+                max-width: 100%;
+            }
+            .qr-item img {
+                max-width: 160px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+
+        <!-- 头像 -->
+        <div class="avatar">🧑‍💻</div>
+
+        <!-- 昵称 & 简介 -->
+        <div class="name">zby1314</div>
+        <div class="bio">独立开发者 · 分享技术 · 热爱生活</div>
+
+        <hr class="divider" />
+
+        <!-- 打赏标题 -->
+        <span class="coffee-icon">☕</span>
+        <div class="donate-title">请我喝一杯咖啡</div>
+        <div class="donate-sub">你的支持是我持续更新的动力 ❤️</div>
+
+        <!-- 二维码区域 -->
+        <div class="qr-grid">
+            <!-- 支付宝 -->
+            <div class="qr-item">
+                <div class="label"><span class="icon">💳</span>支付宝</div>
+                <img id="alipayQR" src="https://i.ibb.co/twWLdg0p/b65b8f28748edadbd356fe3c7b17ea29.jpg" alt="支付宝收款码" />
+                <div class="hint">支付宝扫码</div>
+            </div>
+
+            <!-- 微信 -->
+            <div class="qr-item">
+                <div class="label"><span class="icon">💬</span>微信</div>
+                <img id="wechatQR" src="https://i.ibb.co/ZqkBMsm/62f019feac167ca3da53a59195aa19d5.jpg" alt="微信收款码" />
+                <div class="hint">微信扫码</div>
+            </div>
+        </div>
+
+        <!-- 返回首页 -->
+        <a href="/" class="back-btn">🏠 返回首页</a>
+
+        <!-- Footer -->
+        <div class="footer">© 2026 zby1314 · 感谢支持</div>
+    </div>
+
+</body>
+</html>
